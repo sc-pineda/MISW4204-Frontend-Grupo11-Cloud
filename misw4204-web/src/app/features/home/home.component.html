@@ -1,0 +1,54 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <span class="navbar-brand mb-0 h1 fs-5">MISW4204</span>
+    <div class="navbar-nav ms-auto flex-row gap-2 align-items-center">
+      @if (isAdmin()) {
+        <a class="btn btn-outline-light btn-sm" routerLink="/admin">Administración</a>
+      }
+      <span class="navbar-text text-white-50 small me-2 d-none d-md-inline">
+        {{ user()?.name }} ({{ user()?.email }})
+      </span>
+      <button type="button" class="btn btn-outline-light btn-sm" (click)="logout()">Salir</button>
+    </div>
+  </div>
+</nav>
+
+<main class="container py-4">
+  <h2 class="h4 mb-3">Inicio</h2>
+  <p class="text-muted">Sesión iniciada correctamente.</p>
+
+  <div class="card mb-3">
+    <div class="card-header">Tu perfil</div>
+    <div class="card-body">
+      <p class="mb-1"><strong>Nombre:</strong> {{ user()?.name }}</p>
+      <p class="mb-1"><strong>Correo:</strong> {{ user()?.email }}</p>
+      <p class="mb-0"><strong>Roles:</strong> {{ user()?.roles?.join(', ') }}</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Accesos según tu rol</div>
+    <div class="card-body">
+      <ul class="mb-0">
+        @if (isAdmin()) {
+          <li>
+            <strong>Administrador:</strong> panel disponible (resumen, usuarios, períodos, espacios, vinculaciones,
+            tareas) — usá el botón <em>Administración</em> arriba.
+          </li>
+        }
+        @if (isProfessor()) {
+          <li><strong>Profesor:</strong> vistas de espacios, vinculaciones y reportes — <span class="text-muted">en construcción</span>.</li>
+        }
+        @if (isMonitor() || isAssistant()) {
+          <li>
+            <strong>Monitor / asistente graduado:</strong> registro e historial de tareas semanales —
+            <span class="text-muted">en construcción</span>.
+          </li>
+        }
+        @if (!isAdmin() && !isProfessor() && !isMonitor() && !isAssistant()) {
+          <li>No se detectaron roles conocidos en el token.</li>
+        }
+      </ul>
+    </div>
+  </div>
+</main>

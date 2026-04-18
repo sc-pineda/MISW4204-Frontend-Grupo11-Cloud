@@ -1,0 +1,69 @@
+<h1 class="h4 mb-3">Vinculaciones (rectificación admin)</h1>
+@if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+}
+@if (success()) {
+  <div class="alert alert-success">{{ success() }}</div>
+}
+
+@if (editingId() !== null) {
+  <div class="card mb-3 border-primary">
+    <div class="card-header">Editar vinculación #{{ editingId() }}</div>
+    <div class="card-body">
+      <form [formGroup]="editForm" (ngSubmit)="save()">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label">Rol</label>
+            <select class="form-select" formControlName="role_in_assignment">
+              <option value="monitor">monitor</option>
+              <option value="graduate_assistant">graduate_assistant</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Horas contratadas / semana</label>
+            <input type="number" class="form-control" formControlName="contracted_hours_per_week" min="1" />
+          </div>
+          <div class="col-md-4">
+            <button type="submit" class="btn btn-primary me-2" [disabled]="saving()">Guardar</button>
+            <button type="button" class="btn btn-secondary" (click)="cancelEdit()" [disabled]="saving()">Cancelar</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (loading()) {
+  <p class="text-muted">Cargando…</p>
+} @else {
+  <div class="table-responsive">
+    <table class="table table-sm table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Usuario</th>
+          <th>Espacio</th>
+          <th>Profesor</th>
+          <th>Rol</th>
+          <th>Horas</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (a of assignments(); track a.ID) {
+          <tr>
+            <td>{{ a.ID }}</td>
+            <td>{{ a.UserID }}</td>
+            <td>{{ a.AcademicSpaceID }}</td>
+            <td>{{ a.ProfessorID }}</td>
+            <td>{{ a.RoleInAssignment }}</td>
+            <td>{{ a.ContractedHoursPerWeek }}</td>
+            <td>
+              <button type="button" class="btn btn-outline-primary btn-sm" (click)="startEdit(a)">Editar</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -1,0 +1,38 @@
+<h1 class="h4 mb-3">Espacios académicos (todos)</h1>
+@if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+}
+@if (loading()) {
+  <p class="text-muted">Cargando…</p>
+} @else {
+  <div class="table-responsive">
+    <table class="table table-sm table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Tipo</th>
+          <th>Período</th>
+          <th>Profesor</th>
+          <th>Inicio</th>
+          <th>Fin</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of spaces(); track s.ID) {
+          <tr>
+            <td>{{ s.ID }}</td>
+            <td>{{ s.Name }}</td>
+            <td>{{ s.Type }}</td>
+            <td>{{ s.AcademicPeriodID }}</td>
+            <td>{{ s.ProfessorID }}</td>
+            <td>{{ s.StartDate | isoDate }}</td>
+            <td>{{ s.EndDate | isoDate }}</td>
+            <td>{{ s.Status }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -15,6 +15,22 @@ Frontend del curso **MISW4204** (Grupo 11), cliente del API del backend del proy
 
 ---
 
+## Documentación
+
+- [Guía de implementación](docs/GUIA-IMPLEMENTACION.md)
+
+## App Angular (`misw4204-web/`)
+
+Desde la carpeta `misw4204-web`:
+
+```bash
+npm install
+npm start
+```
+
+Navegador: [http://localhost:4200](http://localhost:4200) (redirige a `/home` o `/login` según sesión). El proxy reenvía `/api` al backend en `http://localhost:8080` (ver `proxy.conf.json`).
+
+
 ## Requisitos
 
 - Node.js (LTS recomendado) y Angular CLI.
