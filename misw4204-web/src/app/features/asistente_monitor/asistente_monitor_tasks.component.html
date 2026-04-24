@@ -1,0 +1,36 @@
+<h1 class="h4 mb-3">Mis tareas</h1>
+@if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+}
+@if (loading()) {
+  <p class="text-muted">Cargando…</p>
+} @else {
+  <div class="table-responsive">
+    <table class="table table-sm table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Título</th>
+          <th>Estado</th>
+          <th>Semana</th>
+          <th>Horas</th>
+          <th>Vinculación</th>
+          <th>Tarde</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (t of tasks(); track t.id) {
+          <tr>
+            <td>{{ t.id }}</td>
+            <td>{{ t.title }}</td>
+            <td>{{ t.status }}</td>
+            <td>{{ t.week_start | isoDate }}</td>
+            <td>{{ t.time_invested }}</td>
+            <td>{{ t.assignment_id }}</td>
+            <td>{{ t.is_late ? 'sí' : 'no' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
