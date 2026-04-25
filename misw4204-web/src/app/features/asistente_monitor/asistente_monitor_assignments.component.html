@@ -1,0 +1,34 @@
+<h1 class="h4 mb-3">Mis vinculaciones</h1>
+@if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+}
+@if (loading()) {
+  <p class="text-muted">Cargando…</p>
+} @else {
+  <div class="table-responsive">
+    <table class="table table-sm table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Usuario</th>
+          <th>Espacio</th>
+          <th>Profesor</th>
+          <th>Rol</th>
+          <th>Horas</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (a of assignments(); track a.ID) {
+          <tr>
+            <td>{{ a.ID }}</td>
+            <td>{{ a.UserID }}</td>
+            <td>{{ a.AcademicSpaceID }}</td>
+            <td>{{ a.ProfessorID }}</td>
+            <td>{{ a.RoleInAssignment }}</td>
+            <td>{{ a.ContractedHoursPerWeek }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
