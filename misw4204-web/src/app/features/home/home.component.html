@@ -8,6 +8,9 @@
       @if (isProfessor()) {
         <a class="btn btn-outline-light btn-sm" routerLink="/professor">Panel profesor</a>
       }
+      @if (isMonitor() || isAssistant()) {
+        <a class="btn btn-outline-light btn-sm" routerLink="/asistente-monitor">Asistente / monitor</a>
+      }
       <span class="navbar-text text-white-50 small me-2 d-none d-md-inline">
         {{ user()?.name }} ({{ user()?.email }})
       </span>
@@ -47,8 +50,8 @@
         }
         @if (isMonitor() || isAssistant()) {
           <li>
-            <strong>Monitor / asistente graduado:</strong> registro e historial de tareas semanales —
-            <span class="text-muted">en construcción</span>.
+            <strong>Monitor / asistente graduado:</strong> módulo disponible para ver vinculaciones, ver tareas y
+            registrar nuevas tareas asociadas a una vinculación.
           </li>
         }
         @if (!isAdmin() && !isProfessor() && !isMonitor() && !isAssistant()) {

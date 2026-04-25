@@ -1,0 +1,67 @@
+<h1 class="h4 mb-3">Crear tarea</h1>
+@if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+}
+@if (success()) {
+  <div class="alert alert-success">{{ success() }}</div>
+}
+
+@if (loadingAssignments()) {
+  <p class="text-muted">Cargando vinculaciones…</p>
+} @else {
+  <div class="card border-primary">
+    <div class="card-header">Nueva tarea asociada a una vinculación</div>
+    <div class="card-body">
+      <form [formGroup]="createForm" (ngSubmit)="createTask()">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Vinculación</label>
+            <select class="form-select" formControlName="assignment_id">
+              @for (a of assignments(); track a.ID) {
+                <option [ngValue]="a.ID">#{{ a.ID }} - Espacio {{ a.AcademicSpaceID }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Estado</label>
+            <select class="form-select" formControlName="status">
+              <option value="pending">pending</option>
+              <option value="in_progress">in_progress</option>
+              <option value="completed">completed</option>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Título</label>
+            <input type="text" class="form-control" formControlName="title" />
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Descripción</label>
+            <textarea rows="3" class="form-control" formControlName="description"></textarea>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Semana</label>
+            <input type="date" class="form-control" formControlName="week_start" />
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Horas invertidas</label>
+            <input type="number" min="1" class="form-control" formControlName="time_invested" />
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Observaciones</label>
+            <textarea rows="2" class="form-control" formControlName="observations"></textarea>
+          </div>
+
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary" [disabled]="saving()">Guardar tarea</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+}
