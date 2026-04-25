@@ -30,7 +30,7 @@ export class ProfessorApiService {
   }
 
   getAssignmentTasks(assignmentId: number) {
-    return this.http.get<ProfessorTask[]>(`/api/v1/professor/assignments/${assignmentId}/tasks`);
+    return this.http.get<ProfessorTask[]>(`/api/v1/professors/assignments/${assignmentId}/tasks`);
   }
 
   generateReports(weekStart: string) {
