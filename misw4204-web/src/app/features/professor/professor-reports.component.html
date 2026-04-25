@@ -8,29 +8,25 @@
       graduado vinculado. Los archivos quedarán disponibles para descarga una vez que el proceso concluya.
     </p>
     <div class="d-flex align-items-center gap-3 flex-wrap">
-      <select
-        class="form-select form-select-sm"
-        style="max-width: 340px"
-        [value]="selectedWeek()"
-        (change)="onWeekChange($any($event.target).value)"
-      >
+      <select class="form-select form-select-sm" style="max-width: 340px" [value]="selectedWeek()"
+        (change)="onWeekChange($any($event.target).value)">
         @for (w of weekOptions; track w.value) {
-          <option [value]="w.value">{{ w.label }}</option>
+        <option [value]="w.value">{{ w.label }}</option>
         }
       </select>
       <button class="btn btn-primary btn-sm" [disabled]="generating()" (click)="generate()">
         @if (generating()) {
-          Generando...
+        Generando...
         } @else {
-          Generar reportes
+        Generar reportes
         }
       </button>
     </div>
     @if (success()) {
-      <div class="alert alert-success mt-3 mb-0">{{ success() }}</div>
+    <div class="alert alert-success mt-3 mb-0">{{ success() }}</div>
     }
     @if (error()) {
-      <div class="alert alert-danger mt-3 mb-0">{{ error() }}</div>
+    <div class="alert alert-danger mt-3 mb-0">{{ error() }}</div>
     }
   </div>
 </div>
@@ -38,42 +34,43 @@
 <h5 class="mb-3">Reportes generados</h5>
 
 @if (loadingReports()) {
-  <div class="text-center py-4 text-muted">Cargando...</div>
+<div class="text-center py-4 text-muted">Cargando...</div>
 } @else if (reports().length === 0) {
-  <p class="text-muted">No hay reportes generados aún.</p>
+<p class="text-muted">No hay reportes generados aún.</p>
 } @else {
-  <div class="table-responsive">
-    <table class="table table-hover table-sm align-middle">
-      <thead class="table-light">
-        <tr>
-          <th>#</th>
-          <th>Persona</th>
-          <th>Semana</th>
-          <th>Estado</th>
-          <th>Generado</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (r of reports(); track r.id) {
-          <tr>
-            <td class="text-muted small">{{ r.id }}</td>
-            <td>{{ r.user_name }}</td>
-            <td>{{ r.week_start }}</td>
-            <td>
-              <span class="badge" [class]="statusBadgeClass(r.status)">{{ statusLabel(r.status) }}</span>
-            </td>
-            <td class="text-muted small">{{ shortDate(r.created_at) }}</td>
-            <td>
-              @if (r.status === 'ready') {
-                <a class="btn btn-outline-primary btn-sm" [href]="downloadUrl(r)" target="_blank" download
-                  >Descargar</a
-                >
-              }
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+<div class="table-responsive">
+  <table class="table table-hover table-sm align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>#</th>
+        <th>Persona</th>
+        <th>Rol</th>
+        <th>Semana</th>
+        <th>Generado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (r of reports(); track r.id) {
+      <tr>
+        <td class="text-muted small">{{ r.id }}</td>
+        <td>{{ r.user_name }}</td>
+        <td class="text-muted small">{{ r.role }}</td>
+        <td>{{ r.week_start }}</td>
+        <td class="text-muted small">{{ shortDate(r.created_at) }}</td>
+        <td>
+          <button class="btn btn-outline-primary btn-sm" [disabled]="downloadingId() === r.id"
+            (click)="downloadReport(r)">
+            @if (downloadingId() === r.id) {
+            Descargando...
+            } @else {
+            Descargar
+            }
+          </button>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
 }

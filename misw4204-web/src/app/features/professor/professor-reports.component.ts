@@ -13,7 +13,10 @@ function getMondayOf(date: Date): Date {
 }
 
 function toIsoDate(date: Date): string {
-  return date.toISOString().split('T')[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function buildWeekOptions(count = 6): { label: string; value: string }[] {
@@ -45,6 +48,7 @@ export class ProfessorReportsComponent implements OnInit {
   readonly selectedWeek = signal(buildWeekOptions()[0].value);
   readonly loadingReports = signal(true);
   readonly generating = signal(false);
+  readonly downloadingId = signal<number | null>(null);
   readonly reports = signal<PdfReport[]>([]);
   readonly error = signal<string | null>(null);
   readonly success = signal<string | null>(null);
@@ -76,10 +80,11 @@ export class ProfessorReportsComponent implements OnInit {
     this.error.set(null);
     this.success.set(null);
     this.api.generateReports(this.selectedWeek()).subscribe({
-      next: (res) => {
+      next: () => {
         this.generating.set(false);
-        this.success.set(res.message ?? 'Proceso iniciado. Los reportes estarán disponibles en breve.');
-        this.loadReports();
+        this.success.set('Reportes generados exitosamente.');
+        // Recargar lista completa desde el servidor
+        setTimeout(() => this.loadReports(), 500);
       },
       error: (err: unknown) => {
         this.generating.set(false);
@@ -88,19 +93,23 @@ export class ProfessorReportsComponent implements OnInit {
     });
   }
 
-  downloadUrl(report: PdfReport): string {
-    return this.api.getReportDownloadUrl(report.id);
-  }
-
-  statusLabel(status: string): string {
-    const map: Record<string, string> = { ready: 'Listo', pending: 'Procesando', error: 'Error' };
-    return map[status] ?? status;
-  }
-
-  statusBadgeClass(status: string): string {
-    if (status === 'ready') return 'bg-success';
-    if (status === 'pending') return 'bg-warning text-dark';
-    return 'bg-danger';
+  downloadReport(report: PdfReport): void {
+    this.downloadingId.set(report.id);
+    this.api.downloadReport(report.id).subscribe({
+      next: (blob: Blob) => {
+        this.downloadingId.set(null);
+        const url = globalThis.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `reporte_${report.id}.pdf`;
+        link.click();
+        globalThis.URL.revokeObjectURL(url);
+      },
+      error: (err: unknown) => {
+        this.downloadingId.set(null);
+        this.error.set(this.httpErr(err));
+      },
+    });
   }
 
   shortDate(iso: string): string {

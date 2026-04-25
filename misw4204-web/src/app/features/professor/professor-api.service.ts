@@ -24,7 +24,7 @@ export class ProfessorApiService {
   }
 
   getTasksByWeek(weekStart: string) {
-    return this.http.get<ProfessorTask[]>('/api/v1/professor/tasks', {
+    return this.http.get<ProfessorTask[]>('/api/v1/professors/me/tasks', {
       params: { week_start: weekStart },
     });
   }
@@ -34,17 +34,23 @@ export class ProfessorApiService {
   }
 
   generateReports(weekStart: string) {
-    return this.http.post<{ message: string }>('/api/v1/professor/reports/generate', {
+    return this.http.post<PdfReport[]>('/api/v1/reports/weekly', {
       week_start: weekStart,
     });
   }
 
   getReports() {
-    return this.http.get<PdfReport[]>('/api/v1/professor/reports');
+    return this.http.get<PdfReport[]>('/api/v1/reports');
+  }
+
+  downloadReport(reportId: number) {
+    return this.http.get(`/api/v1/reports/${reportId}/download`, {
+      responseType: 'blob',
+    });
   }
 
   getReportDownloadUrl(reportId: number): string {
-    return `/api/v1/professor/reports/${reportId}/download`;
+    return `/api/v1/reports/${reportId}/download`;
   }
 
   getSpaces() {

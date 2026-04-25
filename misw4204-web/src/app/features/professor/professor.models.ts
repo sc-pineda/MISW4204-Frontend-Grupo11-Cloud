@@ -81,12 +81,15 @@ export interface ProfessorTask {
 
 export interface PdfReport {
   id: number;
-  week_start: string;
+  professor_id: number;
   assignment_id: number;
   user_name: string;
-  file_name: string;
+  user_email: string;
+  role: string;
+  week_start: string;
+  ai_summary?: string;
   created_at: string;
-  status: 'pending' | 'ready' | 'error';
+  file_path: string;
 }
 
 export type ReportStatus = 'reported' | 'late' | 'no_report';
