@@ -1,0 +1,98 @@
+<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+  <h4 class="mb-0">Panel del profesor</h4>
+  <div class="d-flex align-items-center gap-2">
+    <label for="weekSelect" class="form-label mb-0 small">Semana:</label>
+    <select
+      id="weekSelect"
+      class="form-select form-select-sm"
+      style="max-width: 340px"
+      [value]="selectedWeek()"
+      (change)="onWeekChange($any($event.target).value)"
+    >
+      @for (w of weekOptions; track w.value) {
+        <option [value]="w.value">{{ w.label }}</option>
+      }
+    </select>
+  </div>
+</div>
+
+@if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <div class="text-center py-5 text-muted">Cargando...</div>
+} @else {
+  <div class="d-flex gap-2 mb-3 flex-wrap">
+    <span class="badge bg-success fs-6 px-3 py-2">{{ totalReported() }} reportaron</span>
+    <span class="badge bg-warning text-dark fs-6 px-3 py-2">{{ totalLate() }} tardíos</span>
+    <span class="badge bg-secondary fs-6 px-3 py-2">{{ totalNoReport() }} sin reporte</span>
+  </div>
+
+  @if (rows().length === 0) {
+    <p class="text-muted">No tiene personas vinculadas en este período.</p>
+  } @else {
+    <div class="table-responsive">
+      <table class="table table-hover table-sm align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Persona</th>
+            <th>Espacio académico</th>
+            <th>Tipo</th>
+            <th>Rol</th>
+            <th class="text-end">Horas contratadas</th>
+            <th class="text-end">Horas reportadas</th>
+            <th>Estado semana</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.assignmentId) {
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ row.userName }}</div>
+                <div class="text-muted small">{{ row.userEmail }}</div>
+              </td>
+              <td>{{ row.spaceName }}</td>
+              <td class="text-muted small text-capitalize">{{ row.spaceType }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [class.bg-primary]="row.role === 'monitor'"
+                  [class.bg-info]="row.role === 'graduate_assistant'"
+                  [class.text-dark]="row.role === 'graduate_assistant'"
+                >
+                  {{ roleLabel(row.role) }}
+                </span>
+              </td>
+              <td class="text-end">{{ row.contractedHours }}h</td>
+              <td class="text-end">
+                @if (row.reportStatus !== 'no_report') {
+                  <strong>{{ row.weekHours }}h</strong>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
+              <td>
+                @if (row.reportStatus === 'reported') {
+                  <span class="badge bg-success">Reportó</span>
+                } @else if (row.reportStatus === 'late') {
+                  <span class="badge bg-warning text-dark">Tardío</span>
+                } @else {
+                  <span class="badge bg-secondary">Sin reporte</span>
+                }
+              </td>
+              <td>
+                <a
+                  class="btn btn-outline-secondary btn-sm"
+                  [routerLink]="['/professor/assignments', row.assignmentId]"
+                  >Ver detalle</a
+                >
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}

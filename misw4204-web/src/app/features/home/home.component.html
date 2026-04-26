@@ -5,6 +5,9 @@
       @if (isAdmin()) {
         <a class="btn btn-outline-light btn-sm" routerLink="/admin">Administración</a>
       }
+      @if (isProfessor()) {
+        <a class="btn btn-outline-light btn-sm" routerLink="/professor">Panel profesor</a>
+      }
       @if (isMonitor() || isAssistant()) {
         <a class="btn btn-outline-light btn-sm" routerLink="/asistente-monitor">Asistente / monitor</a>
       }
@@ -36,11 +39,14 @@
         @if (isAdmin()) {
           <li>
             <strong>Administrador:</strong> panel disponible (resumen, usuarios, períodos, espacios, vinculaciones,
-            tareas) — usá el botón <em>Administración</em> arriba.
+            tareas) — usa el botón <em>Administración</em> arriba.
           </li>
         }
         @if (isProfessor()) {
-          <li><strong>Profesor:</strong> vistas de espacios, vinculaciones y reportes — <span class="text-muted">en construcción</span>.</li>
+          <li>
+            <strong>Profesor:</strong> panel de supervisión semanal, detalle por vinculación y generación de reportes
+            PDF — usa el botón <em>Panel profesor</em> arriba.
+          </li>
         }
         @if (isMonitor() || isAssistant()) {
           <li>

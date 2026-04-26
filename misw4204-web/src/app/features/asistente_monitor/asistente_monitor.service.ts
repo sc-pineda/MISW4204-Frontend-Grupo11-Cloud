@@ -27,6 +27,7 @@ export class AsistenteMonitorService {
   createTask(body: CreateMonitorTaskBody) {
     return this.http.post<MonitorTask>('/api/v1/tasks', body);
   }
+<<<<<<< HEAD
 
   updateTask(taskId: number, body: UpdateMonitorTaskBody) {
     return this.http.patch<MonitorTask>(`/api/v1/tasks/${taskId}`, body);
@@ -82,4 +83,6 @@ export class AsistenteMonitorService {
       typeof candidate.StoragePath === 'string'
     );
   }
+=======
+>>>>>>> develop
 }

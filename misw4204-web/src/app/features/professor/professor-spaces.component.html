@@ -1,0 +1,150 @@
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="mb-0">Mis espacios académicos</h4>
+  @if (!showForm()) {
+  <button class="btn btn-success btn-sm" (click)="openForm()">+ Nuevo espacio</button>
+  }
+</div>
+
+@if (success()) {
+<div class="alert alert-success alert-dismissible">
+  {{ success() }}
+  <button type="button" class="btn-close" (click)="success.set(null)"></button>
+</div>
+}
+@if (spacesError()) {
+<div class="alert alert-danger"><strong>Error al cargar espacios:</strong> {{ spacesError() }}</div>
+}
+@if (periodsError()) {
+<div class="alert alert-warning"><strong>Error al cargar períodos:</strong> {{ periodsError() }}</div>
+}
+@if (error()) {
+<div class="alert alert-danger">{{ error() }}</div>
+}
+
+@if (showForm()) {
+<div class="card mb-4">
+  <div class="card-header fw-semibold">Nuevo espacio académico</div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="spaceName" class="form-label">Nombre <span class="text-danger">*</span></label>
+          <input id="spaceName" class="form-control" formControlName="name" placeholder="Ej. Bases de Datos I" />
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+          <div class="text-danger small mt-1">Mínimo 2 caracteres.</div>
+          }
+        </div>
+
+        <div class="col-md-3">
+          <label for="spaceType" class="form-label">Tipo <span class="text-danger">*</span></label>
+          <select id="spaceType" class="form-select" formControlName="type">
+            <option value="course">Curso</option>
+            <option value="project">Proyecto</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label for="spacePeriod" class="form-label">Período académico <span class="text-danger">*</span></label>
+          @if (periodsError()) {
+          <input id="spacePeriod" type="number" class="form-control" formControlName="academic_period_id"
+            placeholder="ID del período" min="1" />
+          <div class="text-warning small mt-1">
+            No se pudo cargar la lista de períodos ({{ periodsError() }}). Ingrese el ID del período activo
+            manualmente. El administrador puede consultarlo en <strong>/admin/periodos</strong>.
+          </div>
+          } @else {
+          <select id="spacePeriod" class="form-select" formControlName="academic_period_id">
+            <option [value]="0" disabled>Seleccionar...</option>
+            @for (p of periods(); track p.ID) {
+            <option [value]="p.ID">{{ p.Code }}</option>
+            }
+          </select>
+          @if (periods().length === 0 && !loadingPeriods()) {
+          <div class="text-warning small mt-1">
+            No hay períodos activos. El administrador debe crear uno en <strong>/admin/periodos</strong>.
+          </div>
+          }
+          }
+          @if (form.controls.academic_period_id.invalid && form.controls.academic_period_id.touched) {
+          <div class="text-danger small mt-1">Ingrese un período válido.</div>
+          }
+        </div>
+
+        <div class="col-md-3">
+          <label for="spaceStart" class="form-label">Fecha de inicio <span class="text-danger">*</span></label>
+          <input id="spaceStart" type="date" class="form-control" formControlName="start_date" />
+        </div>
+
+        <div class="col-md-3">
+          <label for="spaceEnd" class="form-label">Fecha de cierre <span class="text-danger">*</span></label>
+          <input id="spaceEnd" type="date" class="form-control" formControlName="end_date" />
+        </div>
+
+        <div class="col-12">
+          <label for="spaceObs" class="form-label">Observaciones</label>
+          <textarea id="spaceObs" class="form-control" formControlName="observations" rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-success btn-sm" [disabled]="saving()">
+          {{ saving() ? 'Guardando...' : 'Crear espacio' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancel()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+}
+
+@if (loadingSpaces()) {
+<div class="text-center py-5 text-muted">Cargando...</div>
+} @else if (spaces().length === 0 && !spacesError()) {
+<p class="text-muted">No tiene espacios registrados. Cree el primero con el botón de arriba.</p>
+} @else {
+<div class="table-responsive">
+  <table class="table table-hover table-sm align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Nombre</th>
+        <th>Tipo</th>
+        <th>Período</th>
+        <th>Inicio</th>
+        <th>Cierre</th>
+        <th>Estado</th>
+        <th>Observaciones</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (s of spaces(); track s.ID) {
+      <tr>
+        <td class="fw-semibold">{{ s.Name }}</td>
+        <td>
+          <span class="badge" [class.bg-primary]="s.Type === 'course'" [class.bg-secondary]="s.Type === 'project'">
+            {{ typeLabel(s.Type) }}
+          </span>
+        </td>
+        <td>{{ s.AcademicPeriodID }}</td>
+        <td class="text-muted small">{{ shortDate(s.StartDate) }}</td>
+        <td class="text-muted small">{{ shortDate(s.EndDate) }}</td>
+        <td>
+          <span class="badge" [class.bg-success]="s.Status === 'active'" [class.bg-secondary]="s.Status !== 'active'">
+            {{ s.Status }}
+          </span>
+        </td>
+        <td class="text-muted small">{{ s.Observations ?? '—' }}</td>
+        <td>
+          @if (s.Status === 'active') {
+          <button type="button" class="btn btn-outline-warning btn-sm" [disabled]="closing() === s.ID"
+            (click)="closeSpace(s.ID)">
+            {{ closing() === s.ID ? '...' : 'Cerrar' }}
+          </button>
+          }
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+}
