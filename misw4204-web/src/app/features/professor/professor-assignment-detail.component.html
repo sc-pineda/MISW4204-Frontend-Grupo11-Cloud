@@ -1,0 +1,100 @@
+<a class="btn btn-outline-secondary btn-sm mb-3" routerLink="/professor/dashboard">← Volver al panel</a>
+
+@if (loading()) {
+  <div class="text-center py-5 text-muted">Cargando...</div>
+} @else if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+} @else {
+  @let a = assignment();
+  @if (a) {
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title mb-1">{{ a.UserName }}</h5>
+        <p class="text-muted small mb-2">{{ a.UserEmail }}</p>
+        <div class="d-flex gap-4 flex-wrap small">
+          <span><strong>Espacio ID:</strong> #{{ a.AcademicSpaceID }}</span>
+          <span><strong>Rol:</strong> {{ roleLabel(a.RoleInAssignment) }}</span>
+          <span><strong>Horas contratadas:</strong> {{ a.ContractedHoursPerWeek }}h/semana</span>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="alert alert-warning">Vinculación no encontrada.</div>
+  }
+
+  <div class="row g-4">
+    <div class="col-md-4">
+      <h6 class="fw-semibold mb-2">Resumen por semana</h6>
+      @if (weekSummaries().length === 0) {
+        <p class="text-muted small">Sin registros aún.</p>
+      } @else {
+        <div class="list-group">
+          @for (s of weekSummaries(); track s.weekStart) {
+            <button
+              type="button"
+              class="list-group-item list-group-item-action"
+              [class.active]="selectedWeek() === s.weekStart"
+              (click)="selectWeek(s.weekStart)"
+            >
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="small fw-semibold">{{ s.weekStart }}</span>
+                <span
+                  class="badge"
+                  [class.bg-success]="!s.hasLate"
+                  [class.bg-warning]="s.hasLate"
+                  [class.text-dark]="s.hasLate"
+                  >{{ s.totalHours }}h</span
+                >
+              </div>
+              <div class="small text-muted mt-1" [class.text-white-50]="selectedWeek() === s.weekStart">
+                {{ s.taskCount }} tarea{{ s.taskCount !== 1 ? 's' : '' }}
+                @if (s.hasLate) {
+                  · <span class="fw-semibold">Tardío</span>
+                }
+              </div>
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="col-md-8">
+      <h6 class="fw-semibold mb-2">
+        Tareas
+        @if (selectedWeek()) {
+          — semana {{ selectedWeek() }}
+        }
+      </h6>
+      @if (!selectedWeek() || selectedWeekTasks().length === 0) {
+        <p class="text-muted small">Sin tareas para esta semana.</p>
+      } @else {
+        <div class="list-group">
+          @for (task of selectedWeekTasks(); track task.id) {
+            <div class="list-group-item">
+              <div class="d-flex justify-content-between align-items-start gap-2">
+                <div class="flex-grow-1">
+                  <div class="fw-semibold">{{ task.title }}</div>
+                  <p class="mb-1 small text-muted">{{ task.description }}</p>
+                  @if (task.observations) {
+                    <p class="mb-1 small fst-italic text-secondary">
+                      <em>Observaciones:</em> {{ task.observations }}
+                    </p>
+                  }
+                  <span class="badge bg-light text-dark border small">{{ task.status }}</span>
+                </div>
+                <div class="text-end text-nowrap">
+                  <div class="fw-bold fs-5">{{ task.time_invested }}h</div>
+                  @if (task.is_late) {
+                    <span class="badge bg-warning text-dark">Tardío</span>
+                  } @else {
+                    <span class="badge bg-success">A tiempo</span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}

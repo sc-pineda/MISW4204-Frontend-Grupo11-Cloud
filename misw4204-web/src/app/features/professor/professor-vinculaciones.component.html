@@ -1,0 +1,130 @@
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="mb-0">Vinculaciones</h4>
+  @if (!showForm()) {
+  <button class="btn btn-success btn-sm" (click)="openForm()">+ Nueva vinculación</button>
+  }
+</div>
+
+@if (success()) {
+<div class="alert alert-success alert-dismissible">
+  {{ success() }}
+  <button type="button" class="btn-close" (click)="success.set(null)"></button>
+</div>
+}
+@if (error()) {
+<div class="alert alert-danger">{{ error() }}</div>
+}
+
+@if (showForm()) {
+<div class="card mb-4">
+  <div class="card-header fw-semibold">Nueva vinculación</div>
+  <div class="card-body">
+    <div class="alert alert-info small mb-3 py-2">
+      <strong>Reglas de negocio:</strong> Monitor: máx. 3 monitorías simultáneas, máx. 12h/semana en total.
+      Asistente graduado: máx. 22h/semana. Si una persona ejerce ambos roles, las horas de monitoría no pueden
+      superar el 40 % de las horas contratadas como asistente graduado (se redondea hacia arriba). Las horas
+      <strong>no podrán modificarse</strong> una vez creada la vinculación.
+    </div>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="vincSpace" class="form-label">Espacio académico <span class="text-danger">*</span></label>
+          <select id="vincSpace" class="form-select" formControlName="academic_space_id">
+            <option [ngValue]="0" disabled>Seleccionar...</option>
+            @for (s of spaces(); track s.ID) {
+            <option [ngValue]="s.ID">{{ s.Name }} ({{ s.Type }})</option>
+            }
+          </select>
+          @if (spaces().length === 0 && !loading()) {
+          <div class="text-warning small mt-1">
+            No tiene espacios creados. Cree uno en la sección <strong>Espacios</strong> primero.
+          </div>
+          }
+        </div>
+
+        <div class="col-md-6">
+          <label for="vincUser" class="form-label">Persona <span class="text-danger">*</span></label>
+          <select id="vincUser" class="form-select" formControlName="user_id">
+            <option [ngValue]="0" disabled>Seleccionar...</option>
+            @for (u of users(); track u.id) {
+            <option [ngValue]="u.id">{{ u.name }} — {{ u.roles.join(', ') }}</option>
+            }
+          </select>
+          @if (users().length === 0 && !loading()) {
+          <div class="text-warning small mt-1">No hay monitores o asistentes graduados disponibles.</div>
+          }
+        </div>
+
+        <div class="col-md-4">
+          <label for="vincRole" class="form-label">Rol en la vinculación <span class="text-danger">*</span></label>
+          <select id="vincRole" class="form-select" formControlName="role_in_assignment">
+            <option value="monitor">Monitor</option>
+            <option value="graduate_assistant">Asistente graduado</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label for="vincHours" class="form-label">Horas semanales contratadas <span
+              class="text-danger">*</span></label>
+          <input id="vincHours" type="number" class="form-control" formControlName="contracted_hours_per_week" min="1"
+            max="22" />
+          <div class="form-text">{{ maxHoursHint() }}</div>
+          @if (form.controls.contracted_hours_per_week.invalid && form.controls.contracted_hours_per_week.touched) {
+          <div class="text-danger small mt-1">Valor entre 1 y 22.</div>
+          }
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-success btn-sm" [disabled]="saving()">
+          {{ saving() ? 'Guardando...' : 'Crear vinculación' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancel()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+}
+
+@if (loading()) {
+<div class="text-center py-5 text-muted">Cargando...</div>
+} @else if (assignments().length === 0) {
+<p class="text-muted mt-2">No tiene vinculaciones creadas aún.</p>
+} @else {
+<div class="table-responsive mt-2">
+  <table class="table table-hover table-sm align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Persona</th>
+        <th>Espacio académico</th>
+        <th>Tipo</th>
+        <th>Rol</th>
+        <th class="text-end">Horas/semana</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (a of assignments(); track a.ID) {
+      <tr>
+        <td>
+          <div class="fw-semibold">{{ a.UserName }}</div>
+          <div class="text-muted small">{{ a.UserEmail }}</div>
+        </td>
+        <td>{{ spaceName(a.AcademicSpaceID) }}</td>
+        <td class="text-muted small">{{ spaceType(a.AcademicSpaceID) }}</td>
+        <td>
+          <span
+            class="badge"
+            [class.bg-primary]="a.RoleInAssignment === 'monitor'"
+            [class.bg-info]="a.RoleInAssignment === 'graduate_assistant'"
+            [class.text-dark]="a.RoleInAssignment === 'graduate_assistant'"
+          >
+            {{ roleLabel(a.RoleInAssignment) }}
+          </span>
+        </td>
+        <td class="text-end">{{ a.ContractedHoursPerWeek }}h</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+}
