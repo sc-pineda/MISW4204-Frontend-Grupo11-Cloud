@@ -1,10 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-<<<<<<< HEAD
 import { forkJoin } from 'rxjs';
-=======
->>>>>>> develop
 
 import { AuthService } from '../../core/services/auth.service';
 import type { CreateMonitorTaskBody, MonitorAssignment } from './asistente_monitor.models';
@@ -77,7 +74,6 @@ export class AsistenteMonitorCreateTaskComponent implements OnInit {
     };
     this.saving.set(true);
     this.api.createTask(payload).subscribe({
-<<<<<<< HEAD
       next: (createdTask) => {
         const files = this.selectedFiles();
         if (files.length === 0) {
@@ -93,20 +89,6 @@ export class AsistenteMonitorCreateTaskComponent implements OnInit {
             this.saving.set(false);
             this.error.set(`La tarea se creó, pero falló la carga de adjuntos: ${this.httpErr(err)}`);
           },
-=======
-      next: () => {
-        this.saving.set(false);
-        this.success.set('Tarea creada correctamente.');
-        const firstAssignmentId: number = this.assignments()[0]?.ID ?? 0;
-        this.createForm.reset({
-          assignment_id: firstAssignmentId,
-          title: '',
-          description: '',
-          status: 'pending',
-          week_start: '',
-          time_invested: 1,
-          observations: '',
->>>>>>> develop
         });
       },
       error: (err: unknown) => {
@@ -116,7 +98,6 @@ export class AsistenteMonitorCreateTaskComponent implements OnInit {
     });
   }
 
-<<<<<<< HEAD
   onFilesSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.selectedFiles.set(Array.from(input.files ?? []));
@@ -138,8 +119,6 @@ export class AsistenteMonitorCreateTaskComponent implements OnInit {
     });
   }
 
-=======
->>>>>>> develop
   private httpErr(err: unknown): string {
     if (err instanceof HttpErrorResponse) {
       const body = err.error as { error?: string } | undefined;
