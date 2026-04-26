@@ -58,6 +58,17 @@
           </div>
 
           <div class="col-12">
+            <label class="form-label">Adjuntos (opcional)</label>
+            <input type="file" class="form-control" multiple (change)="onFilesSelected($event)" />
+            <div class="form-text">Puedes adjuntar uno o varios archivos al crear la tarea.</div>
+            @if (selectedFiles().length > 0) {
+              <div class="small text-muted mt-2">
+                {{ selectedFiles().length }} archivo(s) seleccionado(s).
+              </div>
+            }
+          </div>
+
+          <div class="col-12">
             <button type="submit" class="btn btn-primary" [disabled]="saving()">Guardar tarea</button>
           </div>
         </div>
