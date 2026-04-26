@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 
 import { AuthService } from '../../core/services/auth.service';
 import type { CreateMonitorTaskBody, MonitorAssignment } from './asistente_monitor.models';
@@ -21,6 +22,7 @@ export class AsistenteMonitorCreateTaskComponent implements OnInit {
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly success = signal<string | null>(null);
+  readonly selectedFiles = signal<File[]>([]);
 
   readonly createForm = this.fb.nonNullable.group({
     assignment_id: [0, [Validators.required, Validators.min(1)]],
@@ -72,24 +74,48 @@ export class AsistenteMonitorCreateTaskComponent implements OnInit {
     };
     this.saving.set(true);
     this.api.createTask(payload).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.success.set('Tarea creada correctamente.');
-        const firstAssignmentId: number = this.assignments()[0]?.ID ?? 0;
-        this.createForm.reset({
-          assignment_id: firstAssignmentId,
-          title: '',
-          description: '',
-          status: 'pending',
-          week_start: '',
-          time_invested: 1,
-          observations: '',
+      next: (createdTask) => {
+        const files = this.selectedFiles();
+        if (files.length === 0) {
+          this.finishCreateSuccess('Tarea creada correctamente.');
+          return;
+        }
+
+        forkJoin(files.map((file) => this.api.uploadTaskAttachment(createdTask.id, file))).subscribe({
+          next: () => {
+            this.finishCreateSuccess(`Tarea creada y ${files.length} adjunto(s) cargado(s).`);
+          },
+          error: (err: unknown) => {
+            this.saving.set(false);
+            this.error.set(`La tarea se creó, pero falló la carga de adjuntos: ${this.httpErr(err)}`);
+          },
         });
       },
       error: (err: unknown) => {
         this.saving.set(false);
         this.error.set(this.httpErr(err));
       },
+    });
+  }
+
+  onFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.selectedFiles.set(Array.from(input.files ?? []));
+  }
+
+  private finishCreateSuccess(message: string): void {
+    this.saving.set(false);
+    this.success.set(message);
+    this.selectedFiles.set([]);
+    const firstAssignmentId: number = this.assignments()[0]?.ID ?? 0;
+    this.createForm.reset({
+      assignment_id: firstAssignmentId,
+      title: '',
+      description: '',
+      status: 'pending',
+      week_start: '',
+      time_invested: 1,
+      observations: '',
     });
   }
 

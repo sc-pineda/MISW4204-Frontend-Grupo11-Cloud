@@ -2,6 +2,9 @@
 @if (error()) {
   <div class="alert alert-danger">{{ error() }}</div>
 }
+@if (success()) {
+  <div class="alert alert-success">{{ success() }}</div>
+}
 @if (loading()) {
   <p class="text-muted">Cargando…</p>
 } @else {
@@ -15,20 +18,135 @@
           <th>Semana</th>
           <th>Horas</th>
           <th>Vinculación</th>
-          <th>Tarde</th>
+          <th>Bloqueada</th>
+          <th>Adjuntos</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
         @for (t of tasks(); track t.id) {
-          <tr>
+          <tr [class.table-warning]="t.is_late">
             <td>{{ t.id }}</td>
             <td>{{ t.title }}</td>
-            <td>{{ t.status }}</td>
+            <td>
+              <span class="badge text-bg-secondary">{{ t.status }}</span>
+            </td>
             <td>{{ t.week_start | isoDate }}</td>
             <td>{{ t.time_invested }}</td>
             <td>{{ t.assignment_id }}</td>
-            <td>{{ t.is_late ? 'sí' : 'no' }}</td>
+            <td>
+              @if (t.is_late) {
+                <span class="badge text-bg-warning">sí</span>
+                <div class="small text-muted">RN-32/33: inmutable</div>
+              } @else {
+                <span class="badge text-bg-success">no</span>
+              }
+            </td>
+            <td style="min-width: 280px">
+              @if (isLoadingTaskAttachments(t.id)) {
+                <div class="small text-muted mb-1">Cargando adjuntos...</div>
+              } @else if (taskAttachmentError(t.id)) {
+                <div class="small text-danger mb-1">No se pudieron cargar: {{ taskAttachmentError(t.id) }}</div>
+              } @else if (taskAttachments(t.id).length > 0) {
+                <div class="mb-2">
+                  @for (attachment of taskAttachments(t.id); track attachment.ID) {
+                    <div class="small">
+                      <strong>{{ attachment.FileName }}</strong>
+                      <span class="text-muted">({{ attachmentMimeType(attachment) }})</span>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="small text-muted mb-1">Sin adjuntos</div>
+              }
+
+              <input
+                #taskFileInput
+                type="file"
+                class="form-control form-control-sm"
+                multiple
+                (change)="onTaskFilesSelected(t.id, $event)"
+                [disabled]="t.is_late || uploadingTaskId() === t.id"
+              />
+              <div class="d-flex align-items-center gap-2 mt-1">
+                <small class="text-muted">Seleccionados: {{ taskSelectedFiles(t.id).length }}</small>
+                <small class="text-muted">Guardados: {{ taskAttachments(t.id).length }}</small>
+                <button
+                  type="button"
+                  class="btn btn-outline-primary btn-sm"
+                  (click)="uploadTaskAttachments(t, taskFileInput)"
+                  [disabled]="t.is_late || taskSelectedFiles(t.id).length === 0 || uploadingTaskId() === t.id"
+                >
+                  {{ uploadingTaskId() === t.id ? 'Cargando...' : 'Subir' }}
+                </button>
+              </div>
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm" role="group">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="startEdit(t)"
+                  [disabled]="t.is_late || savingTaskId() === t.id || deletingTaskId() === t.id"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger"
+                  (click)="deleteTask(t)"
+                  [disabled]="t.is_late || savingTaskId() === t.id || deletingTaskId() === t.id"
+                >
+                  {{ deletingTaskId() === t.id ? 'Eliminando...' : 'Eliminar' }}
+                </button>
+              </div>
+            </td>
           </tr>
+
+          @if (editingTaskId() === t.id) {
+            <tr class="table-light">
+              <td colspan="9">
+                <form [formGroup]="editForm" (ngSubmit)="saveEdit(t)">
+                  <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                      <label class="form-label form-label-sm">Título</label>
+                      <input type="text" class="form-control form-control-sm" formControlName="title" />
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label form-label-sm">Estado</label>
+                      <select class="form-select form-select-sm" formControlName="status">
+                        <option value="pending">pending</option>
+                        <option value="in_progress">in_progress</option>
+                        <option value="completed">completed</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label form-label-sm">Semana</label>
+                      <input type="date" class="form-control form-control-sm" formControlName="week_start" />
+                    </div>
+                    <div class="col-md-8">
+                      <label class="form-label form-label-sm">Descripción</label>
+                      <textarea rows="2" class="form-control form-control-sm" formControlName="description"></textarea>
+                    </div>
+                    <div class="col-md-2">
+                      <label class="form-label form-label-sm">Horas</label>
+                      <input type="number" min="1" class="form-control form-control-sm" formControlName="time_invested" />
+                    </div>
+                    <div class="col-md-2">
+                      <label class="form-label form-label-sm">Observaciones</label>
+                      <input type="text" class="form-control form-control-sm" formControlName="observations" />
+                    </div>
+                    <div class="col-12 d-flex gap-2 mt-2">
+                      <button type="submit" class="btn btn-primary btn-sm" [disabled]="savingTaskId() === t.id">
+                        {{ savingTaskId() === t.id ? 'Guardando...' : 'Guardar cambios' }}
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancelEdit()">Cancelar</button>
+                    </div>
+                  </div>
+                </form>
+              </td>
+            </tr>
+          }
         }
       </tbody>
     </table>

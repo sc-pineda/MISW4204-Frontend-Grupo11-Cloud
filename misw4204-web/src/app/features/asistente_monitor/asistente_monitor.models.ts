@@ -22,6 +22,14 @@ export interface MonitorTask {
   observations?: string;
 }
 
+export interface MonitorTaskAttachment {
+  ID: number;
+  TaskID: number;
+  FileName: string;
+  ContentType: string;
+  StoragePath: string;
+}
+
 export interface CreateMonitorTaskBody {
   title: string;
   description: string;
@@ -29,5 +37,14 @@ export interface CreateMonitorTaskBody {
   week_start: string;
   time_invested: number;
   assignment_id: number;
+  observations?: string;
+}
+
+export interface UpdateMonitorTaskBody {
+  title: string;
+  description: string;
+  status: string;
+  week_start: string;
+  time_invested: number;
   observations?: string;
 }
