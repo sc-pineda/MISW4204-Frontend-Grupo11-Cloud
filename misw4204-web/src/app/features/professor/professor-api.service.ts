@@ -11,6 +11,7 @@ import type {
   CreateSpaceBody,
   PdfReport,
   ProfessorAssignment,
+  ReportQueueResponse,
   ProfessorSpace,
   ProfessorTask,
 } from './professor.models';
@@ -34,7 +35,7 @@ export class ProfessorApiService {
   }
 
   generateReports(weekStart: string) {
-    return this.http.post<PdfReport[]>('/api/v1/reports/weekly', {
+    return this.http.post<ReportQueueResponse>('/api/v1/reports/weekly', {
       week_start: weekStart,
     });
   }

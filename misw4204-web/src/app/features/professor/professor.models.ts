@@ -92,6 +92,12 @@ export interface PdfReport {
   file_path: string;
 }
 
+export interface ReportQueueResponse {
+  request_id: string;
+  status: 'queued';
+  message: string;
+}
+
 export type ReportStatus = 'reported' | 'late' | 'no_report';
 
 export interface DashboardRow {

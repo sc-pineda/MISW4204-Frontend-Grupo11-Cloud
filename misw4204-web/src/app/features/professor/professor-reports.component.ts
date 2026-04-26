@@ -71,6 +71,25 @@ export class ProfessorReportsComponent implements OnInit {
     });
   }
 
+  private pollReports(attempt = 1): void {
+    const maxAttempts = 3;
+    const delayMs = 2000;
+
+    this.api.getReports().subscribe({
+      next: (list) => {
+        this.reports.set(list ?? []);
+        this.loadingReports.set(false);
+        if (attempt < maxAttempts) {
+          setTimeout(() => this.pollReports(attempt + 1), delayMs);
+        }
+      },
+      error: (err: unknown) => {
+        this.loadingReports.set(false);
+        this.error.set(this.httpErr(err));
+      },
+    });
+  }
+
   onWeekChange(value: string): void {
     this.selectedWeek.set(value);
   }
@@ -82,9 +101,10 @@ export class ProfessorReportsComponent implements OnInit {
     this.api.generateReports(this.selectedWeek()).subscribe({
       next: () => {
         this.generating.set(false);
-        this.success.set('Reportes generados exitosamente.');
-        // Recargar lista completa desde el servidor
-        setTimeout(() => this.loadReports(), 500);
+        this.success.set('Solicitud encolada correctamente. La generación puede tardar unos segundos.');
+        // Realiza un polling corto para reflejar reportes recién generados.
+        this.loadingReports.set(true);
+        setTimeout(() => this.pollReports(), 2000);
       },
       error: (err: unknown) => {
         this.generating.set(false);
