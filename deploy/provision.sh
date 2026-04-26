@@ -10,7 +10,6 @@ REGION="${REGION:-us-central1}"
 ZONE="${ZONE:-us-central1-a}"
 
 FILES_BUCKET="${PROJECT}-files"
-WEB_BUCKET="${PROJECT}-web"
 SA_NAME="vm-runtime"
 SA_EMAIL="${SA_NAME}@${PROJECT}.iam.gserviceaccount.com"
 VM_NAME="entrega2-vm"
@@ -29,13 +28,8 @@ gcloud services enable \
   artifactregistry.googleapis.com \
   storage.googleapis.com
 
-echo ">> buckets"
+echo ">> files bucket"
 gcloud storage buckets create "gs://$FILES_BUCKET" --location="$REGION" --uniform-bucket-level-access || true
-gcloud storage buckets create "gs://$WEB_BUCKET"   --location="$REGION" --uniform-bucket-level-access || true
-
-echo ">> web bucket: static hosting + public read"
-gcloud storage buckets update "gs://$WEB_BUCKET" --web-main-page-suffix=index.html --web-error-page=index.html
-gcloud storage buckets add-iam-policy-binding "gs://$WEB_BUCKET" --member=allUsers --role=roles/storage.objectViewer
 
 echo ">> service account"
 gcloud iam service-accounts create "$SA_NAME" --display-name="VM runtime SA" || true

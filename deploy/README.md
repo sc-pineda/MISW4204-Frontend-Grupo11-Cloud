@@ -30,9 +30,9 @@ Infraestructura como código (estilo *script*) para desplegar la solución del G
 │  entrega2-db       │               │  miso-494501-files │
 │  Postgres 16       │               │   ├─ attachments/  │
 │  db-f1-micro       │               │   └─ reports/      │
-│  IP: 136.115.165.183                │  miso-494501-web   │
-│  TLS (sslmode=require)              │  (provisionado,   │
-│  ACL: solo IP de la VM              │   no usado)       │
+│  IP: 136.115.165.183│               │                    │
+│  TLS (sslmode=require)              │                    │
+│  ACL: solo IP de la VM              │                    │
 └────────────────────┘               └────────────────────┘
 ```
 
@@ -43,7 +43,6 @@ Infraestructura como código (estilo *script*) para desplegar la solución del G
 | Compute Engine    | `entrega2-vm` (e2-small) | Aloja el backend, RabbitMQ y nginx en *containers*       |
 | Cloud SQL         | `entrega2-db` (Postgres 16, db-f1-micro) | Base de datos durante la sustentación y las pruebas de carga |
 | Cloud Storage     | `gs://miso-494501-files` | Adjuntos de tareas (RF-06.4) y reportes PDF (RF-14.5)    |
-| Cloud Storage     | `gs://miso-494501-web`   | *Bucket* aprovisionado para *hosting* estático; no se utilizó porque el frontend usa URLs relativas y se prefirió mantener el mismo origen vía nginx para evitar CORS y modificar el código existente |
 | IAM               | SA `vm-runtime`          | Identidad de la VM, con `storage.objectAdmin` sobre `gs://miso-494501-files` (autenticación por ADC, sin archivos de credenciales) |
 | VPC firewall      | `allow-http-api`         | Abre `tcp:80` (y `tcp:8080` para depuración) hacia la VM |
 

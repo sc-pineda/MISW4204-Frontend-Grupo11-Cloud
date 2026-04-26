@@ -13,7 +13,7 @@ Procedimiento operativo para satisfacer el requisito de `Entrega2/03-despliegue-
     --format='value(networkInterfaces[0].accessConfigs[0].natIP)'
   ```
 
-- Los buckets `gs://miso-494501-files/` y `gs://miso-494501-web/` ya existen (creados por `provision.sh`).
+- El *bucket* `gs://miso-494501-files/` ya existe (creado por `provision.sh`).
 - `gcloud` autenticado con un usuario *Owner* del proyecto `miso-494501`.
 
 ## A. Aprovisionar la instancia (≈ 8–10 min)

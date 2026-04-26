@@ -1,14 +1,14 @@
 # docker-compose for the Compute Engine VM. Runs:
-#   - postgres (Docker container during dev; swap for Cloud SQL only for load-test + video)
-#   - rabbitmq (queue for async report submission)
+#   - nginx (serves the static frontend bundle and reverse-proxies /api/ to the backend)
 #   - api (the Go backend; built from the cloned repo)
+#   - postgres (Docker container during dev; swapped for Cloud SQL during sustentación + load tests)
+#   - rabbitmq (queue for async report submission)
 #
 # NOT included on the VM (per Entrega 2 plan):
-#   - ollama (RAM budget; RF-14 demoed via pre-generated PDF)
-#   - frontend (served as static files from gs://miso-494501-web)
+#   - ollama (RAM budget; the report worker uses a deterministic fallback summary when the AI is unavailable)
 #
 # Required env vars (set in /opt/app/.env on the VM, NOT committed):
-#   JWT_SECRET, GCS_BUCKET_FILES (defaults to miso-494501-files)
+#   JWT_SECRET, GCS_BUCKET_FILES (defaults to miso-494501-files), DATABASE_URL (optional override)
 
 services:
   postgres:
