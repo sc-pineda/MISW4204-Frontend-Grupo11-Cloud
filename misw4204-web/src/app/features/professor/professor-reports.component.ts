@@ -133,7 +133,7 @@ export class ProfessorReportsComponent implements OnInit {
   }
 
   shortDate(iso: string): string {
-    return iso?.slice(0, 16).replace('T', ' ') ?? '—';
+    return iso?.slice(0, 16).replace('T', ' ') || '—';
   }
 
   private httpErr(err: unknown): string {
