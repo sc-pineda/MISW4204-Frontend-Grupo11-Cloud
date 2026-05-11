@@ -138,7 +138,7 @@ export class ProfessorSpacesComponent implements OnInit {
   }
 
   shortDate(iso: string): string {
-    return iso?.slice(0, 10) ?? '—';
+    return iso?.slice(0, 10) || '—';
   }
 
   private httpErr(err: unknown): string {

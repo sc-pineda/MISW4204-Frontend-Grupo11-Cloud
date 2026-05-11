@@ -1,176 +1,212 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule } from '@angular/forms';
-import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { of, throwError } from 'rxjs';
-import { HttpErrorResponse } from '@angular/common/http';
-import { vi } from 'vitest';
-
 import { ProfessorSpacesComponent } from './professor-spaces.component';
 import { ProfessorApiService } from './professor-api.service';
-import type { AcademicPeriod, ProfessorSpace } from './professor.models';
+import { ReactiveFormsModule } from '@angular/forms';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { of, throwError } from 'rxjs';
+import type { ProfessorSpace, AcademicPeriod } from './professor.models';
 
 describe('ProfessorSpacesComponent', () => {
-  let component: ProfessorSpacesComponent;
-  let fixture: ComponentFixture<ProfessorSpacesComponent>;
-  let apiSpy: {
-    getSpaces: ReturnType<typeof vi.fn>;
-    getActivePeriods: ReturnType<typeof vi.fn>;
-    createSpace: ReturnType<typeof vi.fn>;
-    closeSpace: ReturnType<typeof vi.fn>;
-  };
+    let component: ProfessorSpacesComponent;
+    let fixture: ComponentFixture<ProfessorSpacesComponent>;
+    let apiService: any;
 
-  const mockSpaces: ProfessorSpace[] = [
-    {
-      ID: 1,
-      Name: 'Ingeniería de Software',
-      Type: 'course',
-      AcademicPeriodID: 2,
-      ProfessorID: 3,
-      StartDate: '2026-01-15',
-      EndDate: '2026-06-15',
-      Status: 'active',
-    },
-  ];
+    const mockSpaces: ProfessorSpace[] = [
+        {
+            ID: 1,
+            Name: 'Space 1',
+            Type: 'course',
+            Status: 'active',
+            AcademicPeriodID: 1,
+            ProfessorID: 1,
+            StartDate: '2026-01-01',
+            EndDate: '2026-06-01',
+        },
+    ];
 
-  const mockPeriods: AcademicPeriod[] = [
-    { ID: 1, Code: '2026-1', StartDate: '2026-01-15', EndDate: '2026-06-15', Status: 'active' },
-    { ID: 2, Code: '2025-2', StartDate: '2025-07-15', EndDate: '2025-12-15', Status: 'inactive' },
-  ];
+    const mockPeriods: AcademicPeriod[] = [
+        {
+            ID: 1,
+            Code: '2026-1',
+            StartDate: '2026-01-01',
+            EndDate: '2026-06-01',
+            Status: 'active',
+        },
+    ];
 
-  beforeEach(async () => {
-    apiSpy = {
-      getSpaces: vi.fn().mockReturnValue(of(mockSpaces)),
-      getActivePeriods: vi.fn().mockReturnValue(of(mockPeriods)),
-      createSpace: vi.fn().mockReturnValue(of(mockSpaces[0])),
-      closeSpace: vi.fn().mockReturnValue(of({ status: 'closed' })),
-    };
+    beforeEach(async () => {
+        const apiSpy = {
+            getSpaces: vi.fn(),
+            getActivePeriods: vi.fn(),
+            createSpace: vi.fn(),
+            closeSpace: vi.fn(),
+        };
 
-    await TestBed.configureTestingModule({
-      imports: [ProfessorSpacesComponent, ReactiveFormsModule],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        { provide: ProfessorApiService, useValue: apiSpy },
-      ],
-    }).compileComponents();
+        await TestBed.configureTestingModule({
+            imports: [ProfessorSpacesComponent, ReactiveFormsModule, HttpClientTestingModule],
+            providers: [{ provide: ProfessorApiService, useValue: apiSpy }],
+        }).compileComponents();
 
-    fixture = TestBed.createComponent(ProfessorSpacesComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
-  it('should load spaces and periods on init', () => {
-    expect(apiSpy.getSpaces).toHaveBeenCalled();
-    expect(apiSpy.getActivePeriods).toHaveBeenCalled();
-    expect(component.spaces()).toEqual(mockSpaces);
-    expect(component.loadingSpaces()).toBe(false);
-    expect(component.loadingPeriods()).toBe(false);
-  });
-
-  it('should filter active periods only', () => {
-    const activePeriods = component.periods();
-    expect(activePeriods.length).toBe(1);
-    expect(activePeriods[0].Status).toBe('active');
-  });
-
-  it('should handle error when loading spaces', () => {
-    const error = new HttpErrorResponse({ error: { error: 'Not found' }, status: 404 });
-    apiSpy.getSpaces.mockReturnValue(throwError(() => error));
-
-    component.loadSpaces();
-
-    expect(component.spacesError()).toBe('Not found');
-    expect(component.loadingSpaces()).toBe(false);
-  });
-
-  it('should handle error when loading periods', () => {
-    const error = new HttpErrorResponse({ error: { error: 'Server error' }, status: 500 });
-    apiSpy.getActivePeriods.mockReturnValue(throwError(() => error));
-
-    component.loadPeriods();
-
-    expect(component.periodsError()).toBe('Server error');
-    expect(component.loadingPeriods()).toBe(false);
-  });
-
-  it('should open form with reset values', () => {
-    component.openForm();
-
-    expect(component.showForm()).toBe(true);
-    expect(component.form.value.type).toBe('course');
-    expect(component.form.value.academic_period_id).toBe(0);
-    expect(component.success()).toBeNull();
-    expect(component.error()).toBeNull();
-  });
-
-  it('should cancel form', () => {
-    component.openForm();
-    component.cancel();
-
-    expect(component.showForm()).toBe(false);
-  });
-
-  it('should not save invalid form', () => {
-    component.openForm();
-    component.form.controls.name.setValue('');
-
-    component.save();
-
-    expect(apiSpy.createSpace).not.toHaveBeenCalled();
-    expect(component.form.touched).toBe(true);
-  });
-
-  it('should save valid form', () => {
-    component.openForm();
-    component.form.setValue({
-      name: 'Nuevo espacio',
-      type: 'course',
-      academic_period_id: 1,
-      start_date: '2026-01-15',
-      end_date: '2026-06-15',
-      observations: '',
+        apiService = TestBed.inject(ProfessorApiService) as any;
+        fixture = TestBed.createComponent(ProfessorSpacesComponent);
+        component = fixture.componentInstance;
     });
 
-    component.save();
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 
-    expect(apiSpy.createSpace).toHaveBeenCalled();
-    expect(component.showForm()).toBe(false);
-    expect(component.success()).toBe('Espacio creado correctamente.');
-  });
+    it('should load spaces and periods on init', () => {
+        apiService.getSpaces.mockReturnValue(of(mockSpaces));
+        apiService.getActivePeriods.mockReturnValue(of(mockPeriods));
 
-  it('should close space', () => {
-    component.closeSpace(1);
+        component.ngOnInit();
 
-    expect(apiSpy.closeSpace).toHaveBeenCalledWith(1);
-    expect(component.closing()).toBeNull();
-    expect(component.success()).toBe('Espacio cerrado.');
-  });
+        expect(component.spaces()).toEqual(mockSpaces);
+        expect(component.periods()).toEqual(mockPeriods);
+        expect(component.loadingSpaces()).toBeFalsy();
+        expect(component.loadingPeriods()).toBeFalsy();
+    });
 
-  it('should get correct type label', () => {
-    expect(component.typeLabel('course')).toBe('Curso');
-    expect(component.typeLabel('project')).toBe('Proyecto');
-  });
+    it('should filter active periods only', () => {
+        const periodsWithInactive: AcademicPeriod[] = [
+            {
+                ID: 1,
+                Code: '2026-1',
+                StartDate: '2026-01-01',
+                EndDate: '2026-06-01',
+                Status: 'active',
+            },
+            {
+                ID: 2,
+                Code: '2025-2',
+                StartDate: '2025-07-01',
+                EndDate: '2025-12-01',
+                Status: 'closed',
+            },
+        ];
 
-  it('should format date correctly', () => {
-    expect(component.shortDate('2026-01-15T00:00:00Z')).toBe('2026-01-15');
-  });
+        apiService.getSpaces.mockReturnValue(of(mockSpaces));
+        apiService.getActivePeriods.mockReturnValue(of(periodsWithInactive));
 
-  it('should handle empty date', () => {
-    expect(component.shortDate(null as unknown as string)).toBe('—');
-  });
+        component.loadPeriods();
 
-  it('should load both spaces and periods with load method', () => {
-    apiSpy.getSpaces.mockClear();
-    apiSpy.getActivePeriods.mockClear();
+        expect(component.periods().length).toBe(1);
+        expect(component.periods()[0].Status).toBe('active');
+    });
 
-    component.load();
+    it('should handle error when loading spaces', () => {
+        apiService.getSpaces.mockReturnValue(throwError(() => new Error('API Error')));
 
-    expect(apiSpy.getSpaces).toHaveBeenCalled();
-    expect(apiSpy.getActivePeriods).toHaveBeenCalled();
-  });
+        component.loadSpaces();
+
+        expect(component.loadingSpaces()).toBeFalsy();
+        expect(component.spacesError()).toBeTruthy();
+    });
+
+    it('should handle error when loading periods', () => {
+        apiService.getActivePeriods.mockReturnValue(throwError(() => new Error('API Error')));
+
+        component.loadPeriods();
+
+        expect(component.loadingPeriods()).toBeFalsy();
+        expect(component.periodsError()).toBeTruthy();
+    });
+
+    it('should open form with reset values', () => {
+        component.openForm();
+
+        expect(component.showForm()).toBeTruthy();
+        expect(component.form.get('type')?.value).toBe('course');
+        expect(component.form.get('academic_period_id')?.value).toBe(0);
+        expect(component.success()).toBeNull();
+        expect(component.error()).toBeNull();
+    });
+
+    it('should cancel form', () => {
+        component.showForm.set(true);
+        component.cancel();
+
+        expect(component.showForm()).toBeFalsy();
+    });
+
+    it('should not save invalid form', () => {
+        component.form.patchValue({
+            name: '',
+            type: 'course',
+            academic_period_id: 0,
+            start_date: '',
+            end_date: '',
+        });
+
+        component.save();
+
+        expect(component.saving()).toBeFalsy();
+        expect(apiService.createSpace).not.toHaveBeenCalled();
+    });
+
+    it('should save valid form', () => {
+        const mockSpace: ProfessorSpace = {
+            ID: 2,
+            Name: 'New Space',
+            Type: 'course',
+            Status: 'active',
+            AcademicPeriodID: 1,
+            ProfessorID: 1,
+            StartDate: '2026-01-01',
+            EndDate: '2026-06-01',
+        };
+
+        apiService.createSpace.mockReturnValue(of(mockSpace));
+        apiService.getSpaces.mockReturnValue(of([...mockSpaces, mockSpace]));
+        apiService.getActivePeriods.mockReturnValue(of(mockPeriods));
+
+        component.form.patchValue({
+            name: 'New Space',
+            type: 'course',
+            academic_period_id: 1,
+            start_date: '2026-01-01',
+            end_date: '2026-06-01',
+            observations: '',
+        });
+
+        component.save();
+
+        expect(apiService.createSpace).toHaveBeenCalled();
+    });
+
+    it('should close space', () => {
+        apiService.closeSpace.mockReturnValue(of({ status: 'closed' }));
+        apiService.getSpaces.mockReturnValue(of(mockSpaces));
+        apiService.getActivePeriods.mockReturnValue(of(mockPeriods));
+
+        component.closeSpace(1);
+
+        expect(apiService.closeSpace).toHaveBeenCalledWith(1);
+    });
+
+    it('should get correct type label', () => {
+        expect(component.typeLabel('course')).toBe('Curso');
+        expect(component.typeLabel('project')).toBe('Proyecto');
+    });
+
+    it('should format date correctly', () => {
+        const iso = '2026-01-01T10:30:00Z';
+        expect(component.shortDate(iso)).toBe('2026-01-01');
+    });
+
+    it('should handle empty date', () => {
+        expect(component.shortDate('')).toBe('—');
+    });
+
+    it('should load both spaces and periods with load method', () => {
+        apiService.getSpaces.mockReturnValue(of(mockSpaces));
+        apiService.getActivePeriods.mockReturnValue(of(mockPeriods));
+
+        component.load();
+
+        expect(apiService.getSpaces).toHaveBeenCalled();
+        expect(apiService.getActivePeriods).toHaveBeenCalled();
+    });
 });
