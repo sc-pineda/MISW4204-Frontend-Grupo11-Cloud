@@ -21,7 +21,7 @@ export class ProfessorApiService {
   private readonly http = inject(HttpClient);
 
   getAssignments() {
-    return this.http.get<ProfessorAssignment[]>('/api/v1/userAssignments/profesor');
+    return this.http.get<ProfessorAssignment[]>('/api/v1/professors/me/assignments');
   }
 
   getTasksByWeek(weekStart: string) {
